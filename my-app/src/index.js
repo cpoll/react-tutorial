@@ -2,19 +2,53 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-class Square extends React.Component {
-  render() {
-    return (
-      <button className="square">
-        {this.props.value}
-      </button>
-    );
-  }
+// class Square extends React.Component {
+//   // this.setState is the magic, it tells React to re-render the square.
+//   // This automatically updates the child components inside of it too.
+//   // You can do something dirty like this.state.value = 'X'; this.setState({};
+//   render() {
+//     return (
+//       <button
+//         className="square"
+//         onClick={() => this.props.onClick()}
+//       >
+//         {this.props.value}
+//       </button>
+//     );
+//   }
+// }
+
+function Square(props) {
+  return (
+    <button
+      className="square"
+      onClick={props.onClick}>
+        {props.value}
+    </button>
+  );
 }
 
 class Board extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      squares: Array(9).fill(null)
+    }
+  }
+
+  handleClick(i) {
+    const squares = this.state.squares.slice(); // Copy the array
+    squares[i] = 'X';
+    this.setState({squares: squares});
+  }
+
   renderSquare(i) {
-    return <Square value={i} />;
+    return (
+      <Square
+        value={this.state.squares[i]}
+        onClick={() => this.handleClick(i)}
+      />
+    );
   }
 
   render() {
