@@ -3,41 +3,25 @@ import ReactDOM from 'react-dom';
 import { unstable_concurrentAct } from 'react-dom/test-utils';
 import './index.css';
 
-// class Square extends React.Component {
-//   // this.setState is the magic, it tells React to re-render the square.
-//   // This automatically updates the child components inside of it too.
-//   // You can do something dirty like this.state.value = 'X'; this.setState({};
-//   render() {
-//     return (
-//       <button
-//         className="square"
-//         onClick={this.props.onClick}
-//       >
-//         {this.props.value}
-//       </button>
-//     );
-//   }
-// }
-
-function Square(props) {
+function Square({onClick, value}) {
   return (
     <button
       className="square"
-      onClick={props.onClick}>
-        {props.value}
+      onClick={onClick}>
+        {value}
     </button>
   );
 }
 
-function Board(props) {
+function Board({squares, handleClick}) {
   // It might be a good idea to destructure props or define at the beginning;
   // Is there a nicer way to make it clear what props Board takes?
 
   const renderSquare = (i) => {
     return (
       <Square
-        value={props.squares[i]}
-        onClick={() => props.handleClick(i)}
+        value={squares[i]}
+        onClick={() => handleClick(i)}
       />
     );
   }
