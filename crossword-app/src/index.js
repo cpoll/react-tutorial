@@ -3,30 +3,57 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 
-const Square = React.forwardRef(({label}, ref) => (
-  <input placeholder={label} ref={ref} />
+const Square = React.forwardRef(({label, onClick}, ref) => (
+  <input onClick={onClick} placeholder={label} ref={ref} />
 ));
+
+function rollover(n, low, high) {
+  return n > high ? low :
+         n < low ? high :
+         n;
+}
+
+function clamp(n, low, high) {
+  return Math.min(Math.max(n, low), high);
+}
 
 function Game(_) {
 
+  const row_count = 5;
+  const column_count = 5;
+
   const [state, setState] = useState({
-    current_square: 5
+    current_square: {row: 0, col: 0},
   });
 
-  const squares = []
-  const refs = []
-  for(let i = 0; i < 10; i++) {
-    const ref = React.createRef();
-    refs.push(ref);
-    squares.push(<Square label={i} ref={ref} key={i} />);
+  const squares = [];
+  const refs = []; // TODO: useMemo
+  for(let row = 0; row < row_count; row++) {
+    const square_row = [];
+    const ref_row = [];
+    refs.push(ref_row);
+
+    for(let col = 0; col < column_count; col++){
+      const ref = React.createRef();
+      ref_row.push(ref);
+      square_row.push(<Square onClick={() => changeSquare(row, col)}label={`${row} ${col}`} ref={ref} key={`${row} ${col}`} />);
+    }
+
+    squares.push(<div id={`row-${row}`}>{square_row}</div>);
   }
 
   const changeSquare = useCallback(
-    (direction) => {
-      const new_square = state.current_square+direction;
-      refs[new_square].current.focus();
+    (row, col) => {
+      // I think clamp is nicer than rollover in this case. If you're spamming right, you probably
+      // aren't doing it to get to the next column.
+      // row = rollover(row, 0, row_count-1);
+      // col = rollover(col, 0, column_count-1);
+      row = clamp(row, 0, row_count-1);
+      col = clamp(col, 0, column_count-1);
 
-      setState({...state, current_square: new_square});
+      refs[row][col].current.focus();
+
+      setState({...state, current_square: {row: row, col: col}});
     },
     [state, refs]
   );
@@ -34,13 +61,19 @@ function Game(_) {
   const onKeyDown = useCallback(
     ({key}) => {
       if (key === 'ArrowRight') {
-        changeSquare(1);
+        changeSquare(state.current_square.row, state.current_square.col+1);
       }
       else if (key === 'ArrowLeft') {
-        changeSquare(-1);
+        changeSquare(state.current_square.row, state.current_square.col-1);
+      }
+      else if (key === 'ArrowUp') {
+        changeSquare(state.current_square.row-1, state.current_square.col);
+      }
+      else if (key === 'ArrowDown') {
+        changeSquare(state.current_square.row+1, state.current_square.col);
       }
     },
-    [changeSquare]
+    [state, changeSquare]
   );
 
   useEffect(() => {
@@ -54,8 +87,6 @@ function Game(_) {
   return (
     <div className="crossword">
       {squares}
-      <button onClick={() => changeSquare(-1)}>&lt;</button>
-      <button onClick={() => changeSquare(1)}>&gt;</button>
     </div>
   );
 }
